@@ -34,5 +34,14 @@ class XRInteractionWebViewExample : MonoBehaviour {
         canvasWebViewPrefab.WebView.UrlChanged += (sender, eventArgs) => {
             Debug.Log("[XRInteractionWebViewExample] URL changed: " + eventArgs.Url);
         };
+        
+        //如何在 Unity 中使用 IWebView.MessageEmitted 事件接收该消息
+        canvasWebViewPrefab.WebView.MessageEmitted += (sender, eventArgs) => {
+            // > JSON received: { "type": "greeting", "message": "Hello from JavaScript!" }
+            Debug.Log("JSON received: " + eventArgs.Value);
+        };
+        
+        // Send a message to JavaScript.
+        canvasWebViewPrefab.WebView.PostMessage("{\"type\": \"greeting\", \"message\": \"Hello from C#!\"}");
     }
 }
