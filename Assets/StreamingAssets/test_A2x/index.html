@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>VR-滑动测试</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,minimum-scale=1.0,user-scalable=no">
+    <script src="libs/annieCore.min.js"></script>
+    <!--<script src="libs/annieUI.min.js"></script>-->
+    <script>
+        window.swfBytes="#swfBytes#";
+    </script>
+    <script src="src/Main.js"></script>
+    <style>
+        html,body{
+            width: 100%;
+            height: 100%;
+            margin: 0px;
+            border: 0px;
+            overflow: hidden;
+            position: absolute;
+            background-color: #000000;
+        }
+        body,canvas{
+            -webkit-touch-callout:none;
+            -webkit-user-select:none;
+            -khtml-user-select:none;
+            -moz-user-select:none;
+            -ms-user-select:none;
+            user-select:none;
+        }
+    </style>
+</head>
+<body>
+<div id="annieEngine" style="line-height:0;font-size:0"></div>
+</body>
+</html>
