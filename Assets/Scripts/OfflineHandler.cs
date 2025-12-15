@@ -13,9 +13,8 @@ using Vuplex.WebView;
 
 public class OfflineHandler : MonoBehaviour
 {
-    private string appName = "Aws";
     public CanvasWebViewPrefab _canvasPrefab;
-    public Action StopServerAction;
+    private LocalWebServer _localWebServer;
 
     // Start is called before the first frame update
     void Start()
@@ -26,6 +25,12 @@ public class OfflineHandler : MonoBehaviour
             return;
         }
 
+        _localWebServer = this.GetComponent<LocalWebServer>();
+
+        if (_localWebServer == null)
+        {
+        }
+
         var isInter = IsNetworkReachability();
         Debug.Log($"{isInter}");
 
@@ -33,16 +38,16 @@ public class OfflineHandler : MonoBehaviour
 
         if (!isInter)
         {
-            StartLocalServer();
-
-            // ChangeUrl("http://localhost", 2000);
-            ChangeUrl(GetLocalIpAddressPort(), 2000);
-            StopServerAction = () => { TerminateProcess(appName); };
+            string url = _localWebServer.GetLocalIpAddressPort();
+            _localWebServer.StartServer(url);
+            ChangeUrl(url);
         }
         else
         {
             ChangeUrl("https://tme.tmvmc.cn:19999/ai/test_VR/");
         }
+
+        GetMessageToWeb();
     }
 
     private void Update()
@@ -50,16 +55,15 @@ public class OfflineHandler : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space))
         {
             // StopServerAction?.Invoke();
-            SendMessageToWeb();
+            // SendMessageToWeb();
             // GetMessageToWeb();
         }
     }
 
     private void OnDestroy()
     {
-        TerminateProcess(appName);
+        _localWebServer.StopServerAndThread();
     }
-
 
     /// <summary>
     /// 修改_canvasPrefab上的url
@@ -70,7 +74,6 @@ public class OfflineHandler : MonoBehaviour
     {
         Debug.Log($"{url}");
         await Task.Delay(delayTime);
-        Closebrowser();
         await _canvasPrefab.WaitUntilInitialized();
         _canvasPrefab.WebView.LoadUrl(url);
     }
@@ -93,180 +96,6 @@ public class OfflineHandler : MonoBehaviour
             default:
                 Debug.Log("当前没有联网，请您先联网后再进行操作！");
                 return false;
-        }
-    }
-
-    /// <summary>
-    /// 启动本地服务器
-    /// </summary>
-    private void StartLocalServer()
-    {
-        var appPath = Path.Combine(Application.streamingAssetsPath, "test_A2x\\Aws.exe");
-
-        if (File.Exists(appPath))
-        {
-            Process.Start(appPath);
-        }
-        else
-        {
-            Debug.LogError($"程序不存在: {appPath}");
-        }
-
-        Process.Start(appPath);
-    }
-
-
-    /// <summary>
-    /// 终止程序，参数是程序名称（不带后缀）
-    /// </summary>
-    /// <param name="processName"></param>
-    private void TerminateProcess(string processName)
-    {
-        foreach (Process process in Process.GetProcesses())
-        {
-            try
-            {
-                if (!process.HasExited &&
-                    process.ProcessName.Equals(processName, StringComparison.OrdinalIgnoreCase))
-                {
-                    process.Kill();
-                    Debug.Log($"已终止进程: {processName}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"终止失败: {ex.Message}");
-            }
-        }
-    }
-
-    /// <summary>
-    /// 得到本机IP地址
-    /// </summary>
-    /// <returns></returns>
-    private string GetLocalIpAddressPort()
-    {
-        string localIp = String.Empty;
-        var host = Dns.GetHostEntry(Dns.GetHostName());
-        var ipv4 = host.AddressList
-            .FirstOrDefault(ip => ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
-        if (ipv4 != null)
-        {
-            localIp = ipv4.ToString();
-            Debug.Log("IPv4 地址: " + ipv4);
-        }
-        else
-        {
-            Debug.Log("未找到 IPv4 地址");
-        }
-
-        var port = GetFirstAvailablePort(8081, 8081, 9000);
-        Debug.Log("端口 : " + port);
-        Debug.Log("本机地址和端口 : " + localIp + ":" + port);
-        return localIp + ":" + port;
-    }
-
-    /// <summary>
-    /// 获取可用端口号
-    /// </summary>
-    /// <param name="defaultPort">默认指定的端口号</param>
-    /// <returns>返回可用端口号</returns>
-    public static int? GetFirstAvailablePort(int defaultPort, int minPort, int maxPort)
-    {
-        if (PortIsAvailabe(defaultPort))
-        {
-            return defaultPort;
-        }
-
-        for (int port = minPort; port <= maxPort; port++)
-        {
-            if (PortIsAvailabe(port))
-            {
-                return port;
-            }
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// 检测指定端口是否被占用
-    /// </summary>
-    /// <param name="port">指定的端口号</param>
-    /// <returns>如果端口号被占用，返回True；否则返回False</returns>
-    public static bool PortIsAvailabe(int port)
-    {
-        IList portUsed = PortIsUsed();
-        foreach (int p in portUsed)
-        {
-            if (p == port) return false;
-        }
-
-        return true;
-    }
-
-    /// <summary>
-    /// 获取系统已经被占用的端口号
-    /// </summary>
-    /// <returns>被占用端口号列表</returns>
-    private static IList PortIsUsed()
-    {
-        IPGlobalProperties iPGlobalProperties = IPGlobalProperties.GetIPGlobalProperties();
-        IPEndPoint[] ipsTCP = iPGlobalProperties.GetActiveTcpListeners();
-        IPEndPoint[] ipsUDP = iPGlobalProperties.GetActiveUdpListeners();
-        TcpConnectionInformation[] tcpConnections = iPGlobalProperties.GetActiveTcpConnections();
-
-        IList allPorts = new ArrayList();
-        foreach (IPEndPoint ep in ipsTCP)
-        {
-            allPorts.Add(ep.Port);
-        }
-
-        foreach (IPEndPoint ep in ipsUDP)
-        {
-            allPorts.Add(ep.Port);
-        }
-
-        foreach (TcpConnectionInformation conn in tcpConnections)
-        {
-            allPorts.Add(conn.LocalEndPoint.Port);
-        }
-
-        return allPorts;
-    }
-
-    /// <summary>
-    /// 关闭本地默认浏览器
-    /// </summary>
-    private void Closebrowser()
-    {
-        // List of common browser process names
-        string[] browserNames = { "chrome", "firefox", "iexplore", "msedge" };
-
-        foreach (var browserName in browserNames)
-        {
-            var processes = Process.GetProcessesByName(browserName);
-            if (processes.Length > 0)
-            {
-                Console.WriteLine($"{browserName} is running. Closing it...");
-                foreach (var process in processes)
-                {
-                    try
-                    {
-                        process.Kill();
-                        process.WaitForExit(); // Wait for the process to exit
-                        Console.WriteLine($"{browserName} has been closed.");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Failed to close {browserName}: {ex.Message}");
-                    }
-                }
-            }
-            else
-            {
-                Console.WriteLine($"{browserName} is not running.");
-            }
         }
     }
 

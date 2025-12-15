@@ -133,6 +133,7 @@ GameObject:
   m_Component:
   - component: {fileID: 340303858}
   - component: {fileID: 340303857}
+  - component: {fileID: 340303860}
   m_Layer: 0
   m_Name: Scripts
   m_TagString: Untagged
@@ -153,6 +154,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _canvasPrefab: {fileID: 1476062638}
+  LocalWebServer: {fileID: 340303860}
 --- !u!4 &340303858
 Transform:
   m_ObjectHideFlags: 0
@@ -168,6 +170,23 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &340303860
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 340303856}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77398f3cca134c2db27e4146bcb02751, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultPort: 8080
+  minPort: 8081
+  maxPort: 9000
+  clientTimeout: 5000
+  webRootSubFolder: test_A2x
 --- !u!1 &859806900
 GameObject:
   m_ObjectHideFlags: 0
@@ -973,7 +992,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 114949863196309792, guid: 3e10f3b6a733e441c8352020cff2f1f6, type: 3}
       propertyPath: InitialUrl
-      value: https://tme.tmvmc.cn:19999/ai/test_VR/
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 114949863196309792, guid: 3e10f3b6a733e441c8352020cff2f1f6, type: 3}
       propertyPath: Resolution
@@ -1585,7 +1604,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &3127728408198131880
 GameObject:
   m_ObjectHideFlags: 0
